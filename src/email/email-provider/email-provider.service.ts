@@ -17,12 +17,7 @@ export class EmailProviderService {
     this.logger.log(`Using sender: ${emailFrom}`);
   }
 
-  async sendEmail(options: {
-    to: string;
-    subject: string;
-    html: string;
-    text?: string;
-  }) {
+  async sendEmail(options: { to: string; subject: string; html: string; text?: string }) {
     const msg = {
       to: options.to,
       from: this.configService.get('EMAIL_FROM'),
@@ -38,10 +33,7 @@ export class EmailProviderService {
       this.logger.log(`Email sent to ${options.to} | messageId: ${messageId}`);
       return { success: true, messageId };
     } catch (error) {
-      this.logger.error(
-        `Failed to send email to ${options.to}`,
-        error?.message,
-      );
+      this.logger.error(`Failed to send email to ${options.to}`, error?.message);
       throw error;
     }
   }

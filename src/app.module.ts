@@ -7,12 +7,7 @@ import { TemplateModule } from './template/template.module';
 import { QueueModule } from './queue/queue.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    EmailModule,
-    TemplateModule,
-    QueueModule,
-  ],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), EmailModule, TemplateModule, QueueModule],
   controllers: [AppController],
   providers: [AppService],
 })
