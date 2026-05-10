@@ -39,6 +39,23 @@ model Queue {
   updatedAt   DateTime @updatedAt
 }
 
+model Unsubscribe {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  isBounced   Boolean  @default(false)
+  isComplaint Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model EmailEvent {
+  id        String   @id @default(cuid())
+  email     String
+  messageId String?
+  type      EmailEventType
+  createdAt DateTime @default(now())
+  metadata  Json?
+}
+
 enum EmailStatus {
   PENDING
   SENT
@@ -50,4 +67,12 @@ enum QueueStatus {
   PROCESSING
   SENT
   FAILED
+}
+
+enum EmailEventType {
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINT
 }

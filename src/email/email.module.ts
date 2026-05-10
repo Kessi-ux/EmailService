@@ -6,9 +6,11 @@ import { EmailTestController } from './email-test/email-test.controller';
 import { TemplateModule } from '../template/template.module';
 import { QueueModule } from 'src/queue/queue.module';
 import { EmailController } from './email.controller';
+import { UnsubscribeModule } from 'src/unsubscribe/unsubscribe.module';
 
 @Module({
   imports: [
+    UnsubscribeModule,
     TemplateModule,
     QueueModule,
     BullModule.registerQueue({

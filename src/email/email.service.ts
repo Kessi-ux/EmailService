@@ -1,17 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 //import { EmailProviderService } from './email-provider/email-provider.service';
 import { TemplateService } from '../template/template.service';
 import { QueueService } from '../queue/queue.service';
+import { UnsubscribeService } from 'src/unsubscribe/unsubscribe.service';
 
 @Injectable()
 export class EmailService {
   constructor(
     //private readonly emailProvider: EmailProviderService,
+    private readonly unsubscribeService: UnsubscribeService,
     private readonly queueService: QueueService,
     private readonly templateService: TemplateService,
   ) {}
 
+  private async assertNotUnsubscribed(email: string) {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const unsubscribed = await this.unsubscribeService.isUnsubscribed(normalizedEmail);
+
+    if (unsubscribed) {
+      throw new BadRequestException('Recipient has unsubscribed');
+    }
+  }
+
   async sendWelcomeEmail(user: { firstName: string; lastName: string; email: string }) {
+    await this.assertNotUnsubscribed(user.email);
     // Compile template
     const html = this.templateService.compileTemplate('welcome', user);
 
@@ -25,6 +38,7 @@ export class EmailService {
   }
 
   async sendTransactionalEmail(dto: { to: string; subject: string; html: string; text?: string }) {
+    await this.assertNotUnsubscribed(dto.to);
     await this.queueService.addEmailToQueue(dto);
   }
 
@@ -35,6 +49,7 @@ export class EmailService {
     template: string;
     data: Record<string, any>;
   }) {
+    await this.assertNotUnsubscribed(dto.to);
     const html = this.templateService.compileTemplate(dto.template, dto.data);
 
     if (!html) {
@@ -52,6 +67,7 @@ export class EmailService {
 
   async sendNewsletter(dto: { recipients: string[]; subject: string; html: string }) {
     for (const email of dto.recipients) {
+      await this.assertNotUnsubscribed(email);
       await this.queueService.addEmailToQueue({
         to: email,
         subject: dto.subject,

@@ -33,7 +33,11 @@ export class EmailProviderService {
       this.logger.log(`Email sent to ${options.to} | messageId: ${messageId}`);
       return { success: true, messageId };
     } catch (error) {
-      this.logger.error(`Failed to send email to ${options.to}`, error?.message);
+      //this.logger.error(`Failed to send email to ${options.to}`, error?.message);
+      this.logger.error(
+        `Failed to send email to ${options.to}`,
+        JSON.stringify(error.response?.body || error.message),
+      );
       throw error;
     }
   }
