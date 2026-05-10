@@ -1,98 +1,141 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📧 Email Microservice (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A standalone, scalable email microservice built with **NestJS**, designed to handle transactional emails, newsletters, templates, queue processing, and full email lifecycle tracking (delivery, opens, clicks, bounces, complaints).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+# 🚀 Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- 📩 Transactional email sending (registration, notifications, etc.)
+- 📰 Newsletter broadcasting
+- 🧩 Dynamic email templates (Handlebars)
+- ⚙️ Queue-based processing (Bull + Redis)
+- 🔁 Retry logic with failure handling
+- 🚫 Unsubscribe management
+- 📊 Email delivery tracking (delivered, opened, clicked)
+- ⚠️ Bounce & complaint handling
+- 🐳 Docker support (app + PostgreSQL + Redis)
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+# 🏗️ Architecture Overview
 
-## Compile and run the project
+- **Email Service** → API entry point
+- **Queue (Bull + Redis)** → handles async email processing
+- **Email Provider (SendGrid)** → sends actual emails
+- **Webhook System** → tracks events (open, click, bounce)
+- **Prisma + PostgreSQL** → stores emails, templates, events, unsubscribe data
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+# 📡 API Endpoints
 
-# production mode
-$ npm run start:prod
-```
+## 📩 Email Endpoints
 
-## Run tests
+### Send transactional email
+```http
+POST /emails/send
 
-```bash
-# unit tests
-$ npm run test
+Body:
+{
+  "to": "user@example.com",
+  "subject": "Welcome",
+  "html": "<h1>Hello</h1>"
+}
 
-# e2e tests
-$ npm run test:e2e
+Send newsletter
+POST /emails/newsletter
 
-# test coverage
-$ npm run test:cov
-```
+Body:
 
-## Deployment
+{
+  "recipients": ["user1@example.com", "user2@example.com"],
+  "subject": "Weekly Update",
+  "html": "<h1>News</h1>"
+}
+🧩 Template Endpoints
+Create template
+POST /templates
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Body:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+{
+  "name": "welcome",
+  "html": "<h1>Hello {{firstName}}</h1>"
+}
+🚫 Unsubscribe
+Unsubscribe user
+POST /unsubscribe
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+Body:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+{
+  "email": "user@example.com"
+}
+📊 Webhooks (SendGrid)
+Email events (delivery tracking)
+POST /webhooks/email
 
-## Resources
+Handles:
 
-Check out a few resources that may come in handy when working with NestJS:
+delivered
+open
+click
+bounce
+spam complaint
+⚙️ How It Works
+API receives email request
+Email is validated (unsubscribe check)
+Email is pushed to queue
+Worker processes queue job
+SendGrid sends email
+Webhook captures events
+Events stored in database
+🗄️ Database Models
+EmailEvent → tracks delivery lifecycle
+Template → email templates
+Queue → queued emails
+Unsubscribe → blocked recipients
+🧪 Running Locally
+1. Install dependencies
+npm install
+2. Setup environment variables
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Create .env file:
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+DATABASE_URL="postgresql://email_service_user:Password@localhost:5432/email_service_db"
+REDIS_HOST=localhost
+REDIS_PORT=6379
+3. Run database migrations
+npx prisma migrate dev
+npx prisma generate
+4. Start Redis (required for queue)
+redis-server
+5. Start application
+npm run start:dev
+🐳 Running with Docker
+1. Build and start services
+docker compose up --build
+2. Services included
+NestJS API → http://localhost:3000
+PostgreSQL → localhost:5432
+Redis → localhost:6379
+3. Stop services
+docker compose down
+📦 Tech Stack
+NestJS
+Prisma
+PostgreSQL
+Redis
+Bull Queue
+SendGrid
+Docker
+📈 Acceptance Criteria (Completed)
+✅ Emails are sent successfully
+✅ Templates render dynamic data
+✅ Queue processes emails reliably
+✅ Retry logic implemented
+✅ Unsubscribed users are blocked
+✅ Email events tracked (delivery, open, click)
+✅ Bounce and complaint handling
+✅ Fully dockerized system
